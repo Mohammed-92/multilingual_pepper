@@ -1,0 +1,30 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data (too large)
+data/
+
+# Fine-tuned models (too large)
+inkubalm-finetuned-*/
+
+# Hugging Face cache
+.cache/
+
+# Results
+latency_results_*.txt
+user_study_sentences.csv
+
+# VS Code
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Model files
+*.bin
+*.safetensors
+*.gguf
