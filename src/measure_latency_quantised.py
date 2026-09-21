@@ -1,35 +1,47 @@
 # measure_latency_quantised.py
-# Purpose: Test NLLB-200 in 8-bit quantisation on the Jetson
+# Purpose: Test NLLB-200 with PyTorch dynamic quantisation (CPU) on the Jetson
 # Author: Mohammed Gori
 # Date: September 2026
 #
-# This script uses bitsandbytes to load NLLB in 8-bit precision.
-# It measures latency for isiZulu and compares with full-precision results.
+# Note: Uses torch.quantization.quantize_dynamic which works on CPU.
+# Requires torch.backends.quantized.engine = 'qnnpack' on ARM/Jetson.
 
 import time
+import statistics
 import torch
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 
-def load_nllb_8bit():
-    """Load NLLB-200 in 8-bit quantisation."""
+def load_nllb_quantised():
+    """Load NLLB-200 and apply dynamic quantisation to linear layers."""
     model_name = "facebook/nllb-200-distilled-600M"
-    print(f"Loading {model_name} in 8-bit...")
-
-    quant_config = BitsAndBytesConfig(load_in_8bit=True)
+    print(f"Loading {model_name}...")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, src_lang="eng_Latn")
     model = AutoModelForSeq2SeqLM.from_pretrained(
         model_name,
-        quantization_config=quant_config,
-        device_map="auto"
+        low_cpu_mem_usage=True
     )
+
+    # Set the quantization engine to qnnpack (required for ARM/Jetson)
+    print("Setting quantization engine to qnnpack...")
+    torch.backends.quantized.engine = 'qnnpack'
+    print(f"Supported engines: {torch.backends.quantized.supported_engines}")
+
+    # Apply dynamic quantisation to Linear layers
+    print("Applying dynamic quantisation...")
+    model = torch.quantization.quantize_dynamic(
+        model,
+        {torch.nn.Linear},
+        dtype=torch.qint8
+    )
+
     model.eval()
-    print("NLLB loaded in 8-bit.\n")
+    print("NLLB loaded with dynamic quantisation (CPU).\n")
     return tokenizer, model
 
 
-def measure_latency(tokenizer, model, sentences, tgt_lang="zul_Latn", repeats=3):
+def measure_latency(tokenizer, model, sentences, tgt_lang="zul_Latn", repeats=5):
     """Measure translation latency per sentence."""
     results = []
     target_token_id = tokenizer.convert_tokens_to_ids(tgt_lang)
@@ -38,7 +50,6 @@ def measure_latency(tokenizer, model, sentences, tgt_lang="zul_Latn", repeats=3)
         latencies = []
         for _ in range(repeats):
             inputs = tokenizer(sentence, return_tensors="pt", truncation=True, max_length=128)
-            inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
             start = time.perf_counter()
             with torch.no_grad():
@@ -53,6 +64,7 @@ def measure_latency(tokenizer, model, sentences, tgt_lang="zul_Latn", repeats=3)
 
         results.append({
             "sentence": sentence[:55],
+            "median_ms": statistics.median(latencies),
             "mean_ms": sum(latencies) / len(latencies),
             "min_ms": min(latencies),
             "max_ms": max(latencies)
@@ -75,48 +87,46 @@ def main():
     ]
 
     try:
-        tokenizer, model = load_nllb_8bit()
+        tokenizer, model = load_nllb_quantised()
     except Exception as e:
-        print(f"❌ Failed to load 8-bit model: {e}")
-        print("\nbitsandbytes may not be installed correctly on Jetson.")
-        print("Try: pip3 install bitsandbytes")
-        print("If that fails, skip this test and report the full-precision results instead.")
+        print(f"Failed to load quantised model: {e}")
+        print("\nQuantisation may not be supported on this Jetson build.")
         return
 
     print("Running warm-up...")
     _ = measure_latency(tokenizer, model, [test_sentences[0]], repeats=1)
 
-    print(f"\nMeasuring latency for {len(test_sentences)} sentences (3 repeats each)...\n")
-    results = measure_latency(tokenizer, model, test_sentences, tgt_lang="zul_Latn", repeats=3)
+    print(f"\nMeasuring latency for {len(test_sentences)} sentences (5 repeats each)...\n")
+    results = measure_latency(tokenizer, model, test_sentences, tgt_lang="zul_Latn", repeats=5)
 
     print("=" * 70)
-    print(f"{'Sentence':<57} | {'Mean (ms)':<12}")
+    print(f"{'Sentence':<57} | {'Median (ms)':<12}")
     print("-" * 70)
     for r in results:
-        print(f"{r['sentence']:<57} | {r['mean_ms']:.2f}")
+        print(f"{r['sentence']:<57} | {r['median_ms']:.2f}")
 
-    all_means = [r["mean_ms"] for r in results]
-    avg = sum(all_means) / len(all_means)
-    below_2s = sum(1 for x in all_means if x < 2000)
+    medians = [r["median_ms"] for r in results]
+    avg = statistics.median(medians)
+    below_2s = sum(1 for x in medians if x < 2000)
 
     print("=" * 70)
-    print(f"Average latency (8-bit): {avg:.2f} ms ({avg/1000:.3f} s)")
-    print(f"Min: {min(all_means):.2f} ms | Max: {max(all_means):.2f} ms")
-    print(f"Sentences below 2s: {below_2s}/{len(all_means)}")
+    print(f"Median latency (dynamic quantisation): {avg:.2f} ms ({avg/1000:.3f} s)")
+    print(f"Min: {min(medians):.2f} ms | Max: {max(medians):.2f} ms")
+    print(f"Sentences below 2s: {below_2s}/{len(medians)}")
     print("=" * 70)
 
-    # Save results
     with open("latency_results_quantised.txt", "w") as f:
-        f.write("NLLB-200 8-bit Latency Results (Jetson)\n")
+        f.write("NLLB-200 Dynamic Quantisation Latency Results (Jetson CPU)\n")
         f.write("=" * 60 + "\n")
-        f.write("Precision: 8-bit (bitsandbytes)\n")
+        f.write("Precision: Dynamic int8 (PyTorch qnnpack)\n")
+        f.write("Repeats: 5 | Metric: Median\n")
         f.write("Target language: isiZulu\n\n")
         for r in results:
-            f.write(f"{r['sentence']:<57} | {r['mean_ms']:.2f}\n")
+            f.write(f"{r['sentence']:<57} | {r['median_ms']:.2f}\n")
         f.write("=" * 60 + "\n")
-        f.write(f"Average: {avg:.2f} ms\n")
-        f.write(f"Min: {min(all_means):.2f} ms | Max: {max(all_means):.2f} ms\n")
-        f.write(f"Below 2s: {below_2s}/{len(all_means)}\n")
+        f.write(f"Median: {avg:.2f} ms\n")
+        f.write(f"Min: {min(medians):.2f} ms | Max: {max(medians):.2f} ms\n")
+        f.write(f"Below 2s: {below_2s}/{len(medians)}\n")
 
     print("\nResults saved to latency_results_quantised.txt")
 
