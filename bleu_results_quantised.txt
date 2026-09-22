@@ -1,0 +1,68 @@
+NLLB-200 Quantised (int8) BLEU Results
+======================================================================
+
+LANGUAGE: isiZulu
+  BLEU: 7.69
+  Sentences: 100
+
+  Examples:
+    EN:  We have listened to the complaints and proposals of South Africans ove
+    REF: Sizizwile izikhalazo neziphakamiso zabantu baseNingizimu Afrika kule m
+    GEN: Siye salalela izikhalazo neziphakamiso zabantu baseNingizimu Afrika ku
+
+    EN:  Try to include a landmark , a building or school or something close to
+    REF: Banike izindawo ezigqamile eziseduzane njengesakhiwo , isikole noma yi
+    GEN: Zama ukufaka indawo ekhonjiswe kuyo , isakhiwo noma isikole noma okuth
+
+    EN:  The discussions were fruitful and it seemed as if government had taken
+    REF: Kwakuyingxoxo esazoletha umvuno omuhle - bekungathi uGavumente unakile
+    GEN: Izingxoxo zaba nemiphumela emihle futhi kwabonakala sengathi uhulumeni
+
+----------------------------------------------------------------------
+
+LANGUAGE: Afrikaans
+  BLEU: 37.63
+  Sentences: 100
+
+  Examples:
+    EN:  The teacher controls the correctness of the execution of the movement 
+    REF: Die onderwyser beheer die korrektheid van die uitvoer van die beweging
+    GEN: Die onderwyser beheer die korrekte uitvoering van die beweging sowel a
+
+    EN:  6 . Indicate for each question how answering that question will help t
+    REF: 6 . Toon vir elke vraag aan hoe die antwoord op die vraag sal help om 
+    GEN: 6 . Verwys vir elke vraag hoe die antwoord op daardie vraag sal help o
+
+    EN:  The SAHGCA will have to do this in partnership with experienced busine
+    REF: Die SAJWV sal dit in vennootskap met ondernemers wat ervaring in daard
+    GEN: Die SAHGCA sal dit in vennootskap met ervare sakemanne moet doen .
+
+----------------------------------------------------------------------
+
+LANGUAGE: Northern Sotho
+  BLEU: 6.27
+  Sentences: 100
+
+  Examples:
+    EN:  However , while management in private enterprises and management funct
+    REF: Leha ho le jwalo , leha botsamaisi ba dikgwebo tsa poraefete le botsam
+    GEN: Lega go le bjalo , le ge taolo ya dikgwebo tša poraefete le mešomo ya 
+
+    EN:  People are similar and people are different
+    REF: Batho ba a tshwana hape ba a fapana
+    GEN: Batho ba swana gomme batho ba fapana
+
+    EN:  During his key note address , Chief Magistrate David Ngobeni said the 
+    REF: Nakong ya puo ya hae ya bohlokwa , Maseterata e Moholo David Ngobeni o
+    GEN: Nakong ya polelo ya gagwe ya bohlokwa , Moahlodimogolo David Ngobeni o
+
+----------------------------------------------------------------------
+
+======================================================================
+SUMMARY
+======================================================================
+Language             | BLEU      
+----------------------------------------------------------------------
+isiZulu              | 7.69      
+Afrikaans            | 37.63     
+Northern Sotho       | 6.27      
