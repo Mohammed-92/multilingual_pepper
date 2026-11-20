@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this code or data in your research, please cite the accompanying paper."
+title: "multilingual_pepper"
+abstract: "Code and evaluation scripts for real-time multilingual generation on Pepper-class social robots using quantised NLLB-200 inference for South African languages."
+authors:
+  - family-names: "Gori"
+    given-names: "Mohammed"
+    email: "2580962@students.wits.ac.za"
+    affiliation: "School of Computer Science & Applied Mathematics, University of the Witwatersrand"
+    orcid: ""   # Add your ORCID if you have one, e.g., "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Ingram"
+    given-names: "Branden"
+    affiliation: "School of Computer Science & Applied Mathematics, University of the Witwatersrand"
+  - family-names: "Ranchod"
+    given-names: "Pravesh"
+    affiliation: "School of Computer Science & Applied Mathematics, University of the Witwatersrand"
+type: software
+license: MIT
+repository-code: "https://github.com/Mohammed-92/multilingual_pepper"
+url: "https://github.com/Mohammed-92/multilingual_pepper"
+keywords:
+  - "Multilingual NLP"
+  - "Pepper Robot"
+  - "Quantisation"
+  - "CTranslate2"
+  - "isiZulu"
+  - "Low-Resource Languages"
+  - "Edge AI"
+version: "1.0.0"
+date-released: "2026-11-20"

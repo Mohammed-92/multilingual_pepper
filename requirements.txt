@@ -1,0 +1,20 @@
+# Core deep learning
+torch==1.13.1
+transformers==4.30.2
+sentencepiece==0.1.99
+sacremoses==0.0.53
+
+# Optimised inference engine
+ctranslate2==3.24.0
+
+# Evaluation
+sacrebleu==2.4.0
+
+# Dataset handling
+datasets==2.14.0
+accelerate==0.20.3
+
+# Utilities
+numpy>=1.23.0,<2.0.0
+pandas>=1.5.0
+tqdm>=4.65.0
